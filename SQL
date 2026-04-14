@@ -1,0 +1,132 @@
+//Contoh 1
+SELECT xfh.application_name,
+         xfh.gl_date,
+         COUNT (xfl.dtl_id),
+         SUM (xfl.amount)
+    FROM xxcust_xla_fah_HDR xfh, xxcust_xla_xxxx xfl
+   WHERE     1 = 1
+         AND application_name = 'P SYSTEM Custom Application'
+         AND xfh.hdr_id = xfl.hdr_id
+--and gl_date = '19-SEP-25'
+GROUP BY xfh.application_name, xfh.gl_date
+ORDER BY gl_date
+
+
+
+//Contoh 2
+SELECT ftl.application_name,
+         xah.accounting_date,
+         COUNT (XAH.AE_HEADER_ID),
+         SUM (XAL.ENTERED_DR),
+         SUM (XAL.ENTERED_CR)
+    FROM XLA_xxx      XE,
+         XLA_yyy      XAH,
+         XLA_zzz      XAL,
+         GL_xxx GIR,
+         FND_yyy  ftl
+   WHERE     XE.APPLICATION_ID = XAH.APPLICATION_ID(+)
+         AND XE.EVENT_ID = XAH.EVENT_ID(+)
+         AND XAH.APPLICATION_ID = XAL.APPLICATION_ID(+)
+         AND XAH.AE_HEADER_ID = XAL.AE_HEADER_ID(+)
+         AND GIR.GL_SL_LINK_TABLE(+) = XAL.GL_SL_LINK_TABLE
+         AND GIR.GL_SL_LINK_ID(+) = XAL.GL_SL_LINK_ID
+         AND GJH.JE_HEADER_ID(+) = GIR.JE_HEADER_ID
+         AND TRUNC (GJH.default_effective_date) =
+         AND GIR.JE_HEADER_ID IS NOT NULL
+         AND XE.EVENT_DATE ='19-SEP-25'
+                                           TO_DATE (P_tanggal,'YYYY/MM/DD hh24:mi:ss')
+         AND XE.APPLICATION_ID = ftl.application_id
+         AND ftl.application_name = :P_sys
+         AND ftl.application_name = 'P SYSTEM Custom Application'
+GROUP BY ftl.application_name, xah.accounting_date
+ORDER BY xah.accounting_date;
+
+
+
+//Contoh 3
+SELECT *
+FROM xxcust_yyy h
+JOIN xxcust_xxx l
+ON h.hdr_id = l.hdr_id
+WHERE 1 = 1
+AND h.application_name = 'I Custom Application'
+AND h.process_id = :P_PROCESS_ID
+AND h.event_class_code = :P_EVENT_CLASS_CODE
+AND h.gl_date = :P_GL_DATE
+AND h.process_id = 5814 -- contoh: 5441 / 5634
+AND h.event_id IS NULL
+AND h.xla_status = 'E'
+GROUP BY h.event_class_code
+ORDER BY h.process_id;
+
+
+
+//Contoh 4
+SELECT DISTINCT
+hdr.process_id,
+hdr.event_class_code,
+lns.line_type,
+eve.event_status_code,
+eve.process_status_code,
+eve.event_id,
+lns.line_attribute60,
+lns.line_attribute68 AS prod_subcat
+FROM xxcust_xla_fxx hdr
+JOIN xxcust_xla_fyy lns
+ON hdr.hdr_id = lns.hdr_id
+JOIN xla_events eve
+ON lns.event_id = eve.event_id
+WHERE hdr.application_name = 'I Custom Application'
+AND eve.event_status_code = 'U'
+AND eve.process_status_code = 'U'
+AND lns.line_attribute60 = 'Y'
+AND hdr.gl_date = :P_GL_DATE
+--AND lns.line_type = 42420 -- optional filter
+ORDER BY hdr.process_id;
+
+
+//COntoh 5
+SELECT 
+    hdr.hdr_id,
+    lns.dtl_id,
+    lns.event_id,
+    hdr.process_id,
+    hdr.application_name,
+    hdr.event_class_code,
+    hdr.gl_date,
+    hdr.currency_code,
+    hdr.exchange_rate_type,
+    hdr.exchange_date,
+    hdr.exchange_rate,
+    hdr.attribute1,
+    hdr.xla_status        AS hdr_xla_status,
+    hdr.err_msg           AS hdr_err_message,
+    hdr.process_flag      AS hdr_process_flag,
+    hdr.process_id        AS hdr_process_id,
+    lns.line_type,
+    lns.segment1,
+    lns.segment2,
+    lns.segment3,
+    lns.segment4,
+    lns.segment5,
+    lns.segment6,
+    lns.segment7,
+    lns.segment8,
+    lns.amount,
+    lns.base_amount,
+    lns.xla_status        AS lns_xla_status,
+    lns.err_message       AS lns_err_message,
+    hdr.creation_date
+FROM 
+    xxcust_xla_xxx hdr
+    JOIN xxcust_yyy lns 
+        ON hdr.hdr_id = lns.hdr_id
+WHERE 
+    hdr.application_name = 'ICONS Custom Application'
+    AND hdr.event_class_code = :P_EVENT_CLASS
+    AND hdr.hdr_id = :P_HDR_ID
+    AND hdr.process_id = 8248
+    AND lns.xla_status != 'S'
+    AND hdr.gl_date = '01-JAN-26'
+ORDER BY 
+    hdr.process_id, hdr.hdr_id, lns.dtl_id;

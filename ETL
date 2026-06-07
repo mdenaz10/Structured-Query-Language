@@ -1,0 +1,173 @@
+/****** Object:  StoredProcedure [dbo].[sp_rebuild_dnz_instl]    Script Date: 6/7/2026 3:20:15 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[sp_rebuild_dnz_instl]
+AS
+BEGIN
+
+    SET NOCOUNT ON;
+
+    ------------------------------------------------
+    -- CLEAR TABLE
+    ------------------------------------------------
+
+    TRUNCATE TABLE DNZ_INSTL;
+
+    ------------------------------------------------
+    -- INSERT BASE ORIGINAL SCHEDULE
+    ------------------------------------------------
+
+    INSERT INTO DNZ_INSTL
+    (
+        AGRMNT_ID,
+        AGRMNT_NO,
+        INST_SEQ_NO,
+        DUE_DT,
+        INST_AMT,
+        PRINCIPAL_AMT,
+        INTEREST_AMT,
+        SOURCE_TYPE,
+        SOURCE_AMENDMENT_ID
+    )
+
+    SELECT
+        a.AGRMNT_ID,
+        a.AGRMNT_NO,
+
+        app.INST_SEQ_NO,
+
+        DATEADD(MONTH, app.INST_SEQ_NO, a.AGRMNT_DT),
+
+        app.INST_AMT,
+
+        app.PRINCIPAL_AMT,
+
+        app.INTEREST_AMT,
+
+        'ORIGINAL',
+
+        NULL
+
+    FROM APP_INST_SCHDL app
+
+    JOIN AGRMNT a
+        ON a.APP_ID = app.APP_ID;
+
+    ------------------------------------------------
+    -- APPLY OFFICIAL AMENDMENT
+    ------------------------------------------------
+
+    DECLARE
+        @AMENDMENT_HIST_TRX_ID BIGINT,
+        @AGRMNT_ID BIGINT;
+
+    DECLARE amendment_cursor CURSOR FOR
+
+    SELECT
+        aht.AMENDMENT_HIST_TRX_ID,
+        aht.AGRMNT_ID
+
+    FROM AMENDMENT_HIST_TRX aht
+
+    JOIN RFA r
+        ON r.RFA_ID = aht.RFA_ID
+
+    WHERE
+        r.NOTES NOT LIKE 'SR%'
+        AND aht.AMENDMENT_STAT = 'EXE'
+        AND aht.AMENDMENT_TYPE_ID = 4
+
+    ORDER BY
+        aht.DTM_CRT;
+
+    OPEN amendment_cursor;
+
+    FETCH NEXT FROM amendment_cursor
+    INTO
+        @AMENDMENT_HIST_TRX_ID,
+        @AGRMNT_ID;
+
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+
+        ------------------------------------------------
+        -- DELETE AFFECTED INSTALLMENT
+        ------------------------------------------------
+
+        DELETE d
+
+        FROM DNZ_INSTL d
+
+        JOIN AMENDMENT_INST_SCHDL ais
+            ON ais.INST_SEQ_NO = d.INST_SEQ_NO
+
+        WHERE
+            d.AGRMNT_ID = @AGRMNT_ID
+            AND ais.AMENDMENT_HIST_TRX_ID = @AMENDMENT_HIST_TRX_ID;
+
+        ------------------------------------------------
+        -- INSERT AMENDMENT ROW
+        ------------------------------------------------
+
+        INSERT INTO DNZ_INSTL
+        (
+            AGRMNT_ID,
+            AGRMNT_NO,
+            INST_SEQ_NO,
+            DUE_DT,
+            INST_AMT,
+            PRINCIPAL_AMT,
+            INTEREST_AMT,
+            SOURCE_TYPE,
+            SOURCE_AMENDMENT_ID
+        )
+
+        SELECT
+            a.AGRMNT_ID,
+
+            a.AGRMNT_NO,
+
+            ais.INST_SEQ_NO,
+
+            ais.DUE_DT,
+
+            ais.INST_AMT,
+
+            ais.PRINCIPAL_AMT,
+
+            ais.INTEREST_AMT,
+
+            'AMENDMENT',
+
+            ais.AMENDMENT_HIST_TRX_ID
+
+        FROM AMENDMENT_INST_SCHDL ais
+
+        JOIN AMENDMENT_HIST_TRX aht
+            ON aht.AMENDMENT_HIST_TRX_ID = ais.AMENDMENT_HIST_TRX_ID
+
+        JOIN AGRMNT a
+            ON a.AGRMNT_ID = aht.AGRMNT_ID
+
+        WHERE
+            ais.AMENDMENT_HIST_TRX_ID = @AMENDMENT_HIST_TRX_ID;
+
+        FETCH NEXT FROM amendment_cursor
+        INTO
+            @AMENDMENT_HIST_TRX_ID,
+            @AGRMNT_ID;
+
+    END
+
+    CLOSE amendment_cursor;
+
+    DEALLOCATE amendment_cursor;
+
+END
+GO
+
+

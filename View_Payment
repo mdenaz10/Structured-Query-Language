@@ -1,0 +1,61 @@
+CREATE VIEW VW_DNZ_PAYMENT_SUMMARY
+AS
+
+SELECT
+
+    phh.AGRMNT_ID,
+
+    phd.INST_SEQ_NO,
+
+    ------------------------------------------------
+    -- INSTALLMENT PAID
+    ------------------------------------------------
+
+    SUM(
+        CASE
+            WHEN phd.REF_PAYMENT_ALLOC_ID = 6
+            THEN phd.IN_AMT
+            ELSE 0
+        END
+    ) AS INST_PAID_AMT,
+
+    ------------------------------------------------
+    -- LAST PAYMENT DATE
+    ------------------------------------------------
+
+    MAX(
+        CASE
+            WHEN phd.REF_PAYMENT_ALLOC_ID = 6
+            THEN phh.VALUE_DT
+        END
+    ) AS INST_PAID_DT,
+
+    ------------------------------------------------
+    -- AGING DATA
+    ------------------------------------------------
+
+    MAX(da.DAYS_OVER_DUE) AS LC_DAYS,
+
+    MAX(da.LC_INST_AMT) AS LC_INST_AMT,
+
+    MAX(da.LC_INST_PAID_AMT) AS LC_INST_PAID_AMT,
+
+    MAX(da.LC_INST_ADM_FEE_AMT) AS LC_ADMIN_FEE,
+
+    MAX(da.LC_INST_ADM_FEE_PAID_AMT) AS LC_ADMIN_FEE_PAID
+
+FROM PAY_HIST_H phh
+
+JOIN PAY_HIST_D phd
+    ON phd.PAY_HIST_H_ID = phh.PAY_HIST_H_ID
+
+LEFT JOIN VW_DNZ_LATEST_AGING da
+    ON da.AGRMNT_ID = phh.AGRMNT_ID
+
+WHERE
+    phh.TRX_TYPE_CODE <> 'RESCHEDULING'
+
+GROUP BY
+
+    phh.AGRMNT_ID,
+    phd.INST_SEQ_NO

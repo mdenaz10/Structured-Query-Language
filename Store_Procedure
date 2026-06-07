@@ -1,0 +1,55 @@
+ALTER PROCEDURE sp_generate_agreement_card
+(
+    @AGRMNT_NO VARCHAR(50)
+)
+AS
+BEGIN
+
+    SET NOCOUNT ON;
+
+    SELECT
+
+        d.INST_SEQ_NO,
+
+        d.DUE_DT,
+
+        d.INST_AMT,
+
+        ISNULL(p.INST_PAID_AMT,0)
+            AS INST_PAID_AMT,
+
+        p.INST_PAID_DT,
+
+        d.PRINCIPAL_AMT,
+
+        d.INTEREST_AMT,
+
+        ISNULL(p.LC_DAYS,0)
+            AS LC_DAYS,
+
+        ISNULL(p.LC_INST_AMT,0)
+            AS LC_INST_AMT,
+
+        ISNULL(p.LC_INST_PAID_AMT,0)
+            AS LC_INST_PAID_AMT,
+
+        CAST(0 AS NUMERIC(18,2))
+            AS LC_ADMIN_FEE,
+
+        CAST(0 AS NUMERIC(18,2))
+            AS LC_ADMIN_FEE_PAID
+
+    FROM DNZ_INSTL_V2 d
+
+    LEFT JOIN VW_DNZ_PAYMENT_SUMMARY p
+        ON p.AGRMNT_ID = d.AGRMNT_ID
+       AND p.INST_SEQ_NO = d.INST_SEQ_NO
+
+    WHERE d.AGRMNT_NO = @AGRMNT_NO
+
+    ORDER BY d.INST_SEQ_NO;
+
+END
+GO
+INTO NDD.dbo.AppsStepping
+FROM SERVERPORD(NDD, selec).[ServerA_Database].[dbo].[AppsStepping];

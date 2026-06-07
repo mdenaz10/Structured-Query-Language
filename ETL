@@ -52,9 +52,9 @@ BEGIN
 
         NULL
 
-    FROM APP_INST_SCHDL app
+    FROM xx_table app
 
-    JOIN AGRMNT a
+    JOIN yy_table a
         ON a.APP_ID = app.APP_ID;
 
     ------------------------------------------------
@@ -71,7 +71,7 @@ BEGIN
         aht.AMENDMENT_HIST_TRX_ID,
         aht.AGRMNT_ID
 
-    FROM AMENDMENT_HIST_TRX aht
+    FROM aa_table aht
 
     JOIN RFA r
         ON r.RFA_ID = aht.RFA_ID
@@ -102,7 +102,7 @@ BEGIN
 
         FROM DNZ_INSTL d
 
-        JOIN AMENDMENT_INST_SCHDL ais
+        JOIN bbb_table ais
             ON ais.INST_SEQ_NO = d.INST_SEQ_NO
 
         WHERE
@@ -145,9 +145,9 @@ BEGIN
 
             ais.AMENDMENT_HIST_TRX_ID
 
-        FROM AMENDMENT_INST_SCHDL ais
+        FROM cc_table ais
 
-        JOIN AMENDMENT_HIST_TRX aht
+        JOIN dd_table aht
             ON aht.AMENDMENT_HIST_TRX_ID = ais.AMENDMENT_HIST_TRX_ID
 
         JOIN AGRMNT a

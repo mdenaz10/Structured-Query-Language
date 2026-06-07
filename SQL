@@ -1,4 +1,4 @@
-//Contoh 1
+//Contoh 
 SELECT xfh.application_name,
          xfh.gl_date,
          COUNT (xfl.dtl_id),
@@ -11,9 +11,24 @@ SELECT xfh.application_name,
 GROUP BY xfh.application_name, xfh.gl_date
 ORDER BY gl_date
 
+//contoh subquery
+SELECT
+	r.reason, r.notes, *
+FROM rfa r
+where 
+	rfa_id in (
+	select 
+		rfa_id
+	from AMENDMENT_HIST_TRX aht
+	where 
+		agrmnt_id in (
+			select agrmnt_id
+			from agrmnt a
+			where agrmnt_no = '23701100671'
+			)
+		)
 
-
-//Contoh 2
+//Contoh 
 SELECT ftl.application_name,
          xah.accounting_date,
          COUNT (XAH.AE_HEADER_ID),
@@ -43,7 +58,7 @@ ORDER BY xah.accounting_date;
 
 
 
-//Contoh 3
+//Contoh 
 SELECT *
 FROM xxcust_yyy h
 JOIN xxcust_xxx l
@@ -61,7 +76,7 @@ ORDER BY h.process_id;
 
 
 
-//Contoh 4
+//Contoh 
 SELECT DISTINCT
 hdr.process_id,
 hdr.event_class_code,
@@ -85,7 +100,7 @@ AND hdr.gl_date = :P_GL_DATE
 ORDER BY hdr.process_id;
 
 
-//COntoh 5
+//COntoh 
 SELECT 
     hdr.hdr_id,
     lns.dtl_id,
@@ -94,10 +109,6 @@ SELECT
     hdr.application_name,
     hdr.event_class_code,
     hdr.gl_date,
-    hdr.currency_code,
-    hdr.exchange_rate_type,
-    hdr.exchange_date,
-    hdr.exchange_rate,
     hdr.attribute1,
     hdr.xla_status        AS hdr_xla_status,
     hdr.err_msg           AS hdr_err_message,
@@ -105,13 +116,6 @@ SELECT
     hdr.process_id        AS hdr_process_id,
     lns.line_type,
     lns.segment1,
-    lns.segment2,
-    lns.segment3,
-    lns.segment4,
-    lns.segment5,
-    lns.segment6,
-    lns.segment7,
-    lns.segment8,
     lns.amount,
     lns.base_amount,
     lns.xla_status        AS lns_xla_status,

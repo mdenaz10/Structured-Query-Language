@@ -1,0 +1,54 @@
+alter VIEW VW_DNZ_AGREEMENT_CARD
+AS
+
+SELECT
+
+    d.AGRMNT_ID,
+
+    d.AGRMNT_NO,
+
+    d.INST_SEQ_NO,
+
+    d.DUE_DT,
+
+    d.INST_AMT,
+
+    d.PRINCIPAL_AMT,
+
+    d.INTEREST_AMT,
+
+    ------------------------------------------------
+    -- PAYMENT
+    ------------------------------------------------
+
+    ISNULL(p.INST_PAID_AMT, 0) AS INST_PAID_AMT,
+
+    p.INST_PAID_DT,
+
+    ------------------------------------------------
+    -- LATE CHARGE
+    ------------------------------------------------
+
+    ISNULL(p.LC_DAYS, 0) AS LC_DAYS,
+
+    ISNULL(p.LC_INST_AMT, 0) AS LC_INST_AMT,
+
+    ISNULL(p.LC_INST_PAID_AMT, 0) AS LC_INST_PAID_AMT,
+
+    ISNULL(p.LC_ADMIN_FEE, 0) AS LC_ADMIN_FEE,
+
+    ISNULL(p.LC_ADMIN_FEE_PAID, 0) AS LC_ADMIN_FEE_PAID,
+
+    ------------------------------------------------
+    -- AUDIT
+    ------------------------------------------------
+
+    d.SOURCE_TYPE,
+
+    d.SOURCE_AMENDMENT_ID
+
+FROM DNZ_INSTL_V2 d
+
+LEFT JOIN VW_DNZ_PAYMENT_SUMMARY p
+    ON p.AGRMNT_ID = d.AGRMNT_ID
+    AND p.INST_SEQ_NO = d.INST_SEQ_NO

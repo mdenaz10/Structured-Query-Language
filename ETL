@@ -1,11 +1,11 @@
-/****** Object:  StoredProcedure [dbo].[sp_rebuild_dnz_instl]    Script Date: 6/7/2026 3:20:15 PM ******/
+/****** Object:  StoredProcedure [dbo].[sp_rebuild_instl]    Script Date: 6/7/2026 3:20:15 PM ******/
 SET ANSI_NULLS ON
 GO
 
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE [dbo].[sp_rebuild_dnz_instl]
+CREATE PROCEDURE [dbo].[sp_rebuild_instl]
 AS
 BEGIN
 
@@ -15,13 +15,13 @@ BEGIN
     -- CLEAR TABLE
     ------------------------------------------------
 
-    TRUNCATE TABLE DNZ_INSTL;
+    TRUNCATE TABLE INSTL;
 
     ------------------------------------------------
     -- INSERT BASE ORIGINAL SCHEDULE
     ------------------------------------------------
 
-    INSERT INTO DNZ_INSTL
+    INSERT INTO INSTL
     (
         AGRMNT_ID,
         AGRMNT_NO,
@@ -100,7 +100,7 @@ BEGIN
 
         DELETE d
 
-        FROM DNZ_INSTL d
+        FROM INSTL d
 
         JOIN bbb_table ais
             ON ais.INST_SEQ_NO = d.INST_SEQ_NO
@@ -113,7 +113,7 @@ BEGIN
         -- INSERT AMENDMENT ROW
         ------------------------------------------------
 
-        INSERT INTO DNZ_INSTL
+        INSERT INTO INSTL
         (
             AGRMNT_ID,
             AGRMNT_NO,

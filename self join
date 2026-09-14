@@ -1,0 +1,26 @@
+select 
+--count(*),
+a.AGRMNT_NO, wmf.AREA_CODE,
+rz.KELURAHAN,rz.KECAMATAN, rz.CITY, czah.COLL_ZIPCODE_AREA_H_NAME as area_name, re.EMP_NAME as FC, re2.EMP_NAME as SPV
+from AGRMNT a
+inner join DAILY_AGING da
+on a.AGRMNT_ID = da.AGRMNT_ID and da.AGING_DT = '2026-9-9'
+--left join COLL_AGRMNT collag
+--on a.AGRMNT_ID = collag.AGRMNT_ID
+left join CUST c 
+on c.CUST_ID = a.CUST_ID
+left join CUST_ADDR ca
+on c.CUST_ID = ca.CUST_ADDR_ID and ca.CUST_ADDR_TYPE_ID = 1
+left join REF_ZIPCODE rz
+on ca.ZIPCODE = rz.ZIPCODE and rz.KELURAHAN = ca.KELURAHAN and rz.CITY = ca.CITY
+left join COLL_ZIPCODE_AREA_D czad 
+on rz.REF_ZIPCODE_ID = czad.REF_ZIPCODE_ID
+join COLL_ZIPCODE_AREA_H czah
+on czad.COLL_ZIPCODE_AREA_H_ID = czah.COLL_ZIPCODE_AREA_H_ID
+join WMF_MappingFC wmf
+on wmf.AREA_CODE = czah.COLL_ZIPCODE_AREA_H_CODE
+join REF_EMP re
+on re.REF_EMP_ID = wmf.EMP_ID_FC
+join ref_emp re2
+on wmf.EMP_ID_DC = re2.REF_EMP_ID
+order by a.AGRMNT_NO;
